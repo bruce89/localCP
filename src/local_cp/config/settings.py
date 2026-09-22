@@ -20,3 +20,15 @@ class AppSettings:
 
     def set_last_project(self, path: Path) -> None:
         self._settings.setValue("projects/last_directory", str(path))
+
+    def provider_base_url(self) -> str:
+        return self._settings.value(
+            "ai/base_url", "https://generativelanguage.googleapis.com/v1beta/openai/", str
+        )
+
+    def provider_model(self) -> str:
+        return self._settings.value("ai/model", "gemini-3.5-flash-lite", str)
+
+    def set_provider(self, base_url: str, model: str) -> None:
+        self._settings.setValue("ai/base_url", base_url)
+        self._settings.setValue("ai/model", model)

@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 from local_cp.analysis.models import PythonAnalysis
 from local_cp.analysis.python_analyzer import analyze_python_file
 from local_cp.config.settings import AppSettings
+from local_cp.gui.ai_panel import AIPanel
 from local_cp.gui.workers import Worker
 from local_cp.project.explorer import read_text_file, scan_project
 from local_cp.project.models import ProjectOverview
@@ -68,9 +69,11 @@ class MainWindow(QMainWindow):
         self._analysis.setHtml(
             "<h2>Python analysis</h2><p>Select a Python file and choose Analyze.</p>"
         )
+        self._ai_panel = AIPanel(self._settings)
         tabs = QTabWidget()
         tabs.addTab(self._overview, "Overview")
         tabs.addTab(self._analysis, "Analysis")
+        tabs.addTab(self._ai_panel, "AI")
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(self._panel("Project", self._tree))
@@ -121,6 +124,7 @@ class MainWindow(QMainWindow):
         root = root.resolve()
         self._project_root = root
         self._selected_file = None
+        self._ai_panel.set_selection(root, None)
         self._settings.set_last_project(root)
         self._tree.setRootIndex(self._filesystem.index(str(root)))
         self._tree.setColumnWidth(0, 280)
@@ -144,9 +148,11 @@ class MainWindow(QMainWindow):
         if not path.is_file():
             self._selected_file = None
             self._analyze_action.setEnabled(False)
+            self._ai_panel.set_selection(self._project_root, None)
             return
 
         self._selected_file = path
+        self._ai_panel.set_selection(self._project_root, path)
         self._analyze_action.setEnabled(path.suffix.lower() == ".py")
         try:
             text = read_text_file(path)

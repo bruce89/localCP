@@ -1,53 +1,73 @@
-# Architecture
+# Arquitectura
 
-## Goals
+## Objetivo
 
-Local CP is local-first: repository contents remain on the machine unless a user
-explicitly selects context and submits an AI request. Milestone 1 performs no
-network operations.
+Local CP explora y analiza proyectos localmente. La asistencia de IA es optativa:
+el usuario selecciona un archivo, revisa el contexto y pulsa **Send** para enviarlo.
+Abrir un proyecto o ejecutar análisis estático no inicia solicitudes externas.
 
-## Components
+## Componentes
 
-- `gui`: Qt widgets, presentation, actions, and background-work coordination.
-- `project`: directory traversal, file classification, safe text reads, and statistics.
-- `analysis`: deterministic analyzers and typed result models.
-- `config`: persisted non-secret desktop preferences.
-- `ai`: provider boundary reserved for milestone 2. It has no implementation yet.
+- `gui`: interfaz PySide6, selección, vista previa y tareas en `QThreadPool`.
+- `project`: exploración, clasificación y lectura de archivos de texto.
+- `analysis`: análisis determinista de Python mediante `ast`.
+- `ai.context`: alcance de un archivo y límite de entrada.
+- `ai.provider`: contrato `AIProvider` consumible por otros proveedores.
+- `ai.service`: construye el proveedor seleccionado y resuelve la credencial.
+- `ai.openai_compatible`: transporte HTTP de Chat Completions.
+- `config`: preferencias no secretas y lectura de `GEMINI_API_KEY` desde Windows.
 
-The GUI consumes results from `project` and `analysis`; those packages do not import
-Qt. This keeps core behavior independently testable and prevents a future AI provider
-from becoming coupled to presentation code.
+```mermaid
+flowchart LR
+    U[Usuario] --> G[GUI PySide6]
+    G --> P[Exploración de proyecto]
+    G --> A[Análisis AST local]
+    G --> C[Vista previa y presupuesto]
+    C -->|Send explícito| S[AssistantService / AIProvider]
+    S --> H[Proveedor HTTP compatible con OpenAI]
+    H --> E[API configurada]
+    W[Variable de usuario GEMINI_API_KEY] --> H
+    Q[QSettings: URL y modelo] --> H
+```
 
-## Concurrency
+El diagrama representa el flujo actual y es la base para próximas iteraciones.
+`project`, `analysis` y `ai` no dependen de Qt. El modelo y la URL son campos
+editables; el transporte puede reemplazarse implementando `AIProvider`.
 
-Project scans and Python parsing run through `QThreadPool`. Results and failures are
-returned to the main thread with Qt signals. The filesystem tree uses Qt's asynchronous
-`QFileSystemModel`.
+## Alcance y límites del prototipo de IA
 
-## Safety boundaries
+- Un archivo `.py` del proyecto abierto por solicitud; enlaces simbólicos y archivos
+  externos al proyecto se rechazan.
+- Máximo 12.000 bytes de fuente, 1.000 caracteres de pregunta y estimación de
+  4.000 tokens de entrada. La estimación usa bytes UTF-8 divididos por 3 más margen;
+  no es un tokenizador exacto.
+- Máximo 384 tokens de salida solicitados al proveedor.
+- El archivo se lee al preparar la vista previa y se conserva esa copia para el envío.
+  Cambiar archivo o pregunta invalida la vista previa.
+- La clave se lee en tiempo de ejecución del entorno del proceso o de la variable
+  de usuario de Windows. No se guarda en `QSettings` ni en el repositorio.
+- Errores HTTP muestran sólo código y categoría; no imprimen cuerpos de respuesta,
+  encabezados, solicitudes ni claves.
+- Una solicitud a la vez desde la pestaña AI. No hay reintentos automáticos.
 
-- Common generated and metadata directories are excluded from aggregate scans.
-- Symbolic-link directories are not followed during scans.
-- Binary files are not decoded or displayed.
-- Files larger than 2 MiB are not loaded into the viewer or analyzer.
-- Syntax errors are represented as analysis results rather than crashing the UI.
-- No repository content is sent over the network.
+## Concurrencia
 
-## Current limitations
+Escaneo y análisis AST usan `QThreadPool`; la solicitud HTTP también. Los resultados
+vuelven a la interfaz por señales Qt, conservando la ventana interactiva.
 
-- Static structure extraction is Python-specific.
-- Language detection is extension-based.
-- The code viewer has no syntax highlighting or editing support.
-- Ignored directories are fixed defaults rather than `.gitignore` aware.
-- There is no packaged Windows executable yet.
+## Decisiones y límites conocidos
 
-## Next milestone: optional AI assistance
+- El análisis estructural sigue siendo exclusivo de Python.
+- La detección de lenguajes depende de extensiones.
+- La vista de código no edita ni colorea sintaxis.
+- Los directorios ignorados usan una lista fija, no `.gitignore`.
+- No existe todavía un ejecutable empaquetado para Windows.
+- La estimación de tokens es aproximada y la cuota real depende del proyecto de
+  Google AI Studio. No se infiere una cuota gratis fija.
+- El endpoint compatible con OpenAI está en beta según [Google AI for Developers](https://ai.google.dev/gemini-api/docs/openai).
 
-1. Add a provider protocol independent of the GUI.
-2. Implement an OpenAI-compatible HTTP provider with configurable endpoint and model.
-3. Store API credentials through the OS credential store.
-4. Add explicit context selection and preview before submission.
-5. Enforce configurable byte and estimated-token budgets.
-6. Show exactly which files will leave the machine and require an explicit Send action.
-7. Add mocked provider tests; keep all core features usable without credentials.
+## Evolución prevista
 
+Ver [SPEC.md](SPEC.md). La próxima iteración puede sumar selección de varios archivos
+con presupuesto agregado, detección de secretos, conteo más preciso por proveedor,
+conversaciones locales y otros transportes sin tocar el análisis estático.
