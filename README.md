@@ -1,8 +1,9 @@
 # Local CP (Local Copilot)
 
 Local CP is a local-first Windows desktop application for exploring codebases,
-running lightweight static analysis, and optionally asking about one selected
-Python file through an OpenAI-compatible API. Local analysis needs no API key.
+running lightweight static analysis, and optionally asking about up to three
+explicitly chosen Python files through an OpenAI-compatible API. Local analysis
+needs no API key.
 
 ## Milestone 1 features
 
@@ -54,15 +55,18 @@ as a Windows user environment variable. Local CP reads it at send time, includin
 when the current process has not inherited newly created user variables. The key
 is never written to project files or application settings.
 
-1. Open a project and select one `.py` file.
-2. Enter a question in the **AI** tab.
-3. Choose **Prepare context** and inspect the exact source shown. Review it for
-   secrets or anything you do not want to share.
-4. Choose **Send previewed file and question**. This is the only action that
+1. Open a project, select a `.py` file, and choose **Add selected file** in the
+   **AI** tab. Repeat for up to three files. Remove a highlighted file if needed.
+2. Enter a question and choose **Prepare context**.
+3. Inspect the complete question and the exact source of every included file.
+   Review it for secrets or anything you do not want to share.
+4. Choose **Send previewed files and question**. This is the only action that
    sends source code to the configured provider.
 
-The first experiment allows at most 12 KB of source, estimates at most 4,000 input
-tokens, and requests at most 384 output tokens. There is no automatic retry.
+The current experiment allows at most 12 KB of source **across all files**,
+estimates at most 4,000 input tokens, and requests at most 384 output tokens.
+Changing the question or file list clears the preview; prepare it again before
+sending. There is no automatic retry.
 Google's actual rate limits vary by project, tier, and model; check your active
 limits in [AI Studio](https://ai.google.dev/gemini-api/docs/rate-limits).
 
@@ -72,3 +76,6 @@ statistics, but remain visible in the file tree.
 
 See [docs/architecture.md](docs/architecture.md) for the evolving Mermaid diagram
 and design decisions, and [docs/SPEC.md](docs/SPEC.md) for iteration tracking.
+
+For a guided introduction to Python and hands-on exercises using this codebase,
+start with [LearnDocs](LearnDocs/README.md).

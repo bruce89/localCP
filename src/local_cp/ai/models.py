@@ -4,9 +4,14 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class CodeContext:
+class SourceFile:
     relative_path: str
     source: str
+
+
+@dataclass(frozen=True, slots=True)
+class CodeContext:
+    files: tuple[SourceFile, ...]
     estimated_input_tokens: int
 
 

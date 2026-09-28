@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Local CP")
-        self.resize(1280, 760)
+        self.resize(1340, 800)
 
         self._settings = AppSettings()
         self._thread_pool = QThreadPool.globalInstance()
@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         )
         self._ai_panel = AIPanel(self._settings)
         tabs = QTabWidget()
+        tabs.setMinimumWidth(400)
         tabs.addTab(self._overview, "Overview")
         tabs.addTab(self._analysis, "Analysis")
         tabs.addTab(self._ai_panel, "AI")
@@ -79,7 +80,7 @@ class MainWindow(QMainWindow):
         splitter.addWidget(self._panel("Project", self._tree))
         splitter.addWidget(self._panel("Code", self._viewer))
         splitter.addWidget(tabs)
-        splitter.setSizes([300, 620, 360])
+        splitter.setSizes([280, 530, 530])
         self.setCentralWidget(splitter)
 
         self._open_action = QAction("Open Project", self)

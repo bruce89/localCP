@@ -1,13 +1,16 @@
 # SPEC de Local CP
 
-Estado: iteración 2, prueba de concepto de asistencia de IA para un archivo.
+El recorrido pedagógico, separado de la especificación del producto, está en
+[LearnDocs](../LearnDocs/README.md).
+
+Estado: iteración 3, contexto explícito de hasta tres archivos Python.
 
 ## Problema y propuesta
 
-El usuario necesita entender un archivo de un proyecto local sin recorrer todo el
+El usuario necesita entender partes de un proyecto local sin recorrer todo el
 repositorio ni depender siempre de un proveedor de IA. Local CP ofrece exploración
-y análisis local; cuando el usuario lo decide, envía una pregunta y un archivo
-revisado a un proveedor configurable.
+y análisis local; cuando el usuario lo decide, envía una pregunta y archivos
+revisados a un proveedor configurable.
 
 ## Principios
 
@@ -26,7 +29,7 @@ revisado a un proveedor configurable.
 - [x] Ejecutar tareas de análisis fuera del hilo principal.
 - [x] Probar el núcleo de análisis automáticamente.
 
-## Iteración 2 — prototipo actual
+## Iteración 2 — completada
 
 - [x] Contrato `AIProvider` y transporte HTTP compatible con OpenAI.
 - [x] Configuración de URL y modelo sin guardar la clave.
@@ -57,9 +60,38 @@ revisión visual interactiva de la pestaña AI.
 4. Un archivo externo, demasiado grande o no Python se rechaza antes de la red.
 5. La clave no aparece en Git ni en los mensajes de error.
 
-## Iteración 3 — candidatos
+## Iteración 3 — corte actual
 
-- [ ] Selección explícita de varios archivos con presupuesto agregado.
+- [x] Selección explícita de hasta tres archivos `.py`, agregados uno por uno.
+- [x] Vista previa conjunta con pregunta, rutas y fuente exacta a enviar.
+- [x] Presupuesto agregado: 12 KB de fuente y ~4.000 tokens de entrada estimados.
+- [x] Agregar/quitar archivos o cambiar la pregunta invalida la vista previa.
+- [x] Prueba de la GUI con proveedor simulado y pruebas del presupuesto conjunto.
+- [ ] Validación visual interactiva en Windows.
+- [x] Solicitud real de dos archivos pequeños desde Local CP.
+
+### Validación de extremo a extremo I3 (2026-09-25)
+
+Desde la ventana PySide6 de Local CP se agregaron manualmente
+`src/local_cp/analysis/models.py` y `src/local_cp/analysis/python_analyzer.py`,
+se revisó la vista previa con ambos y se pulsó Send una vez. La respuesta de
+`gemini-3.5-flash-lite` explicó la relación entre `FunctionInfo` y el analizador,
+citando ambos archivos. Estimación local: 1.270 tokens de entrada; uso informado
+por la API: 929 tokens de entrada y 111 de salida. La prueba se ejecutó con Qt
+offscreen; la revisión interactiva de diseño en Windows sigue pendiente.
+
+### Criterios de aceptación I3
+
+1. Seleccionar en el árbol no agrega archivos ni hace red automáticamente.
+2. La lista admite entre uno y tres archivos, sin duplicados y en orden visible.
+3. Un archivo fuera del proyecto, demasiado grande o no Python se rechaza antes
+   de la solicitud.
+4. La vista previa muestra el mismo cuerpo de mensaje que recibe el transporte.
+5. Send hace una única solicitud con los archivos preparados; el análisis local
+   continúa funcionando sin credenciales.
+
+## Candidatos posteriores
+
 - [ ] Señales locales de posibles secretos antes de enviar.
 - [ ] Proveedor alternativo implementando el mismo contrato.
 - [ ] Cancelación de solicitud y mejor manejo de estados de carga.

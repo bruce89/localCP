@@ -4,11 +4,12 @@ from urllib.error import HTTPError
 
 import pytest
 
-from local_cp.ai.models import CodeContext
+from local_cp.ai.context import build_user_message
+from local_cp.ai.models import CodeContext, SourceFile
 from local_cp.ai.openai_compatible import OpenAICompatibleProvider, ProviderError
 
 
-def test_openai_compatible_provider_sends_one_file(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_openai_compatible_provider_sends_selected_files(monkeypatch: pytest.MonkeyPatch) -> None:
     captured = {}
 
     def fake_urlopen(request, timeout):
@@ -28,7 +29,10 @@ def test_openai_compatible_provider_sends_one_file(monkeypatch: pytest.MonkeyPat
 
     monkeypatch.setattr("local_cp.ai.openai_compatible.urlopen", fake_urlopen)
     provider = OpenAICompatibleProvider("https://example.test/v1/", "test-model", "test-key")
-    context = CodeContext("one.py", "def answer(): return 42", 100)
+    context = CodeContext(
+        (SourceFile("one.py", "def answer(): return 42"), SourceFile("two.py", "VALUE = 2")),
+        100,
+    )
 
     result = provider.ask("What does it do?", context)
 
@@ -36,7 +40,11 @@ def test_openai_compatible_provider_sends_one_file(monkeypatch: pytest.MonkeyPat
     assert captured["authorization"] == "Bearer test-key"
     assert captured["payload"]["model"] == "test-model"
     assert len(captured["payload"]["messages"]) == 2
+    assert captured["payload"]["messages"][1]["content"] == build_user_message(
+        "What does it do?", context.files
+    )
     assert "one.py" in captured["payload"]["messages"][1]["content"]
+    assert "two.py" in captured["payload"]["messages"][1]["content"]
     assert captured["payload"]["max_tokens"] == 384
     assert result.text == "It returns 42."
     assert result.input_tokens == 55
@@ -50,7 +58,7 @@ def test_provider_error_does_not_expose_response_body(monkeypatch: pytest.Monkey
     provider = OpenAICompatibleProvider("https://example.test/v1/", "test-model", "test-key")
 
     with pytest.raises(ProviderError, match="rate limit") as caught:
-        provider.ask("Question", CodeContext("one.py", "pass", 100))
+        provider.ask("Question", CodeContext((SourceFile("one.py", "pass"),), 100))
     assert "secret" not in str(caught.value)
 
 

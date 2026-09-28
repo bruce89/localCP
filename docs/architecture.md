@@ -3,7 +3,7 @@
 ## Objetivo
 
 Local CP explora y analiza proyectos localmente. La asistencia de IA es optativa:
-el usuario selecciona un archivo, revisa el contexto y pulsa **Send** para enviarlo.
+el usuario agrega archivos, revisa el contexto y pulsa **Send** para enviarlo.
 Abrir un proyecto o ejecutar análisis estático no inicia solicitudes externas.
 
 ## Componentes
@@ -11,7 +11,7 @@ Abrir un proyecto o ejecutar análisis estático no inicia solicitudes externas.
 - `gui`: interfaz PySide6, selección, vista previa y tareas en `QThreadPool`.
 - `project`: exploración, clasificación y lectura de archivos de texto.
 - `analysis`: análisis determinista de Python mediante `ast`.
-- `ai.context`: alcance de un archivo y límite de entrada.
+- `ai.context`: lista explícita de archivos y presupuesto conjunto de entrada.
 - `ai.provider`: contrato `AIProvider` consumible por otros proveedores.
 - `ai.service`: construye el proveedor seleccionado y resuelve la credencial.
 - `ai.openai_compatible`: transporte HTTP de Chat Completions.
@@ -22,7 +22,8 @@ flowchart LR
     U[Usuario] --> G[GUI PySide6]
     G --> P[Exploración de proyecto]
     G --> A[Análisis AST local]
-    G --> C[Vista previa y presupuesto]
+    G --> L[Lista explícita de archivos]
+    L --> C[Vista previa y presupuesto conjunto]
     C -->|Send explícito| S[AssistantService / AIProvider]
     S --> H[Proveedor HTTP compatible con OpenAI]
     H --> E[API configurada]
@@ -36,14 +37,15 @@ editables; el transporte puede reemplazarse implementando `AIProvider`.
 
 ## Alcance y límites del prototipo de IA
 
-- Un archivo `.py` del proyecto abierto por solicitud; enlaces simbólicos y archivos
-  externos al proyecto se rechazan.
-- Máximo 12.000 bytes de fuente, 1.000 caracteres de pregunta y estimación de
-  4.000 tokens de entrada. La estimación usa bytes UTF-8 divididos por 3 más margen;
-  no es un tokenizador exacto.
+- Entre uno y tres archivos `.py` agregados manualmente desde el proyecto abierto.
+  Se rechazan duplicados, enlaces simbólicos y archivos externos.
+- Máximo 12.000 bytes de fuente **entre todos los archivos**, 1.000 caracteres de
+  pregunta y estimación de 4.000 tokens de entrada. La estimación usa bytes UTF-8
+  divididos por 3 más margen; no es un tokenizador exacto.
 - Máximo 384 tokens de salida solicitados al proveedor.
-- El archivo se lee al preparar la vista previa y se conserva esa copia para el envío.
-  Cambiar archivo o pregunta invalida la vista previa.
+- Cada archivo se lee al preparar la vista previa y se conserva esa copia para el
+  envío. Cambiar la lista o la pregunta invalida la vista previa. La selección
+  del árbol por sí sola no agrega contexto.
 - La clave se lee en tiempo de ejecución del entorno del proceso o de la variable
   de usuario de Windows. No se guarda en `QSettings` ni en el repositorio.
 - Errores HTTP muestran sólo código y categoría; no imprimen cuerpos de respuesta,
@@ -68,6 +70,6 @@ vuelven a la interfaz por señales Qt, conservando la ventana interactiva.
 
 ## Evolución prevista
 
-Ver [SPEC.md](SPEC.md). La próxima iteración puede sumar selección de varios archivos
-con presupuesto agregado, detección de secretos, conteo más preciso por proveedor,
-conversaciones locales y otros transportes sin tocar el análisis estático.
+Ver [SPEC.md](SPEC.md). Una próxima iteración puede sumar detección de secretos,
+conteo más preciso por proveedor, conversaciones locales y otros transportes sin
+tocar el análisis estático.

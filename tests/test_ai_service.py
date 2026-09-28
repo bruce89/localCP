@@ -1,4 +1,4 @@
-from local_cp.ai.models import AIResponse, CodeContext
+from local_cp.ai.models import AIResponse, CodeContext, SourceFile
 from local_cp.ai.service import AssistantService
 
 
@@ -8,7 +8,7 @@ def test_service_accepts_another_provider_without_gui_changes() -> None:
     class ReplacementProvider:
         def ask(self, question: str, context: CodeContext) -> AIResponse:
             captured["question"] = question
-            captured["path"] = context.relative_path
+            captured["path"] = context.files[0].relative_path
             return AIResponse("Replacement answer", "replacement")
 
     def factory(base_url: str, model: str, key: str) -> ReplacementProvider:
@@ -17,7 +17,10 @@ def test_service_accepts_another_provider_without_gui_changes() -> None:
 
     service = AssistantService(provider_factory=factory, key_resolver=lambda: "test-key")
     result = service.ask(
-        "Explain", CodeContext("one.py", "pass", 100), base_url="https://example.test", model="m"
+        "Explain",
+        CodeContext((SourceFile("one.py", "pass"),), 100),
+        base_url="https://example.test",
+        model="m",
     )
 
     assert captured["config"] == ("https://example.test", "m", "test-key")
