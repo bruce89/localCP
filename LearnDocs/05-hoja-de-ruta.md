@@ -55,7 +55,14 @@ origen y confirmación ligada a una vista previa. Ejercicio:
 [laboratorio I4](07-I4-aviso-secretos.md). Dominio: explicar por qué un resultado
 vacío del detector no demuestra que el archivo sea seguro para compartir.
 
-## H — siguiente iteración de producto
+## H — distribución portátil (I5)
+
+Conceptos: intérprete embebido, dependencia de build frente a dependencia de
+runtime, carpeta `dist`, ZIP portátil y prueba aislada. Ejercicio:
+[laboratorio I5](08-I5-empaquetado.md). Dominio: explicar por qué el usuario
+final no instala Python pero debe conservar la carpeta completa.
+
+## I — siguiente iteración de producto
 
 Elegir **una** mejora del [SPEC](../docs/SPEC.md), formular un caso observable,
 escribir la prueba que la haría verificable y recién después implementar. Algunas

@@ -70,7 +70,7 @@ sustituirse en el servicio; la GUI y el analizador AST no conocen el protocolo H
 
 | Decisión | Problema que resuelve ahora | Límite que conviene recordar |
 | --- | --- | --- |
-| PySide6 | Ventana, árbol de archivos y señales para el trabajo de fondo | Empaquetar para Windows sigue pendiente |
+| PySide6 | Ventana, árbol de archivos y señales para el trabajo de fondo | Existe un ZIP portátil para Windows; falta probarlo en otra máquina |
 | `ast` estándar | Símbolos Python sin instalar parsers ni ejecutar fuente | No analiza semántica ni otros lenguajes en profundidad |
 | `QThreadPool` | Evita bloquear la ventana durante escaneo y HTTP | No implica cancelación automática de solicitudes |
 | `src/` y `pip -e` | Importaciones claras y cambios locales visibles | Requiere instalar el paquete en el entorno elegido |

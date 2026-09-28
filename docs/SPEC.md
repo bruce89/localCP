@@ -3,7 +3,7 @@
 El recorrido pedagógico, separado de la especificación del producto, está en
 [LearnDocs](../LearnDocs/README.md).
 
-Estado: iteración 4, aviso local de posibles secretos antes del envío.
+Estado: iteración 5, primera distribución portátil para Windows 11.
 
 ## Problema y propuesta
 
@@ -60,7 +60,7 @@ revisión visual interactiva de la pestaña AI.
 4. Un archivo externo, demasiado grande o no Python se rechaza antes de la red.
 5. La clave no aparece en Git ni en los mensajes de error.
 
-## Iteración 3 — corte actual
+## Iteración 3 — completada
 
 - [x] Selección explícita de hasta tres archivos `.py`, agregados uno por uno.
 - [x] Vista previa conjunta con pregunta, rutas y fuente exacta a enviar.
@@ -90,7 +90,7 @@ offscreen; la revisión interactiva de diseño en Windows sigue pendiente.
 5. Send hace una única solicitud con los archivos preparados; el análisis local
    continúa funcionando sin credenciales.
 
-## Iteración 4 — corte actual
+## Iteración 4 — completada
 
 - [x] Buscar patrones evidentes de credenciales en la pregunta y los archivos
   preparados, sin llamadas de red.
@@ -111,12 +111,45 @@ offscreen; la revisión interactiva de diseño en Windows sigue pendiente.
 4. Cambiar pregunta o archivos borra la confirmación anterior.
 5. El detector es una ayuda parcial, no un certificado de ausencia de secretos.
 
+## Iteración 5 — distribución portátil
+
+- [x] Declarar PyInstaller como dependencia opcional de empaquetado.
+- [x] Generar una carpeta ejecutable y un ZIP portátil en Windows.
+- [x] Extraer el ZIP a una carpeta temporal limpia y probar el arranque sin Python
+  en el `PATH` del proceso, junto con una comprobación del análisis local.
+- [x] Mantener los binarios generados fuera de Git.
+- [x] Revisar visualmente el ZIP extraído en una sesión interactiva de Windows 11
+  (confirmado por el usuario).
+- [ ] Probarlo en una segunda máquina Windows 11 sin Python instalado.
+
+### Criterios de aceptación I5
+
+1. El ZIP contiene `LocalCP/LocalCP.exe` y sus dependencias; el EXE no necesita
+   un intérprete Python instalado por separado.
+2. El arranque empaquetado no consulta la red ni necesita `GEMINI_API_KEY`.
+3. El código y las pruebas desde fuente siguen funcionando.
+4. La documentación explica cómo construir, abrir y verificar el paquete, y
+   diferencia la prueba automatizada de la revisión manual.
+
+Ver [guía de empaquetado](packaging.md) y [laboratorio I5](../LearnDocs/08-I5-empaquetado.md).
+
+### Validación técnica I5 (2026-09-28)
+
+En Windows 11 x64 se generó el ZIP con Python 3.14.6, PySide6 6.11.2 y
+PyInstaller 6.22.3. La prueba extrajo el paquete a un directorio temporal,
+ejecutó el EXE sin Python en el `PATH` del proceso y comprobó arranque Qt y
+análisis AST; terminó con código 0. Las 22 pruebas desde fuente y Ruff también
+pasaron. El usuario confirmó la verificación visual interactiva; no se probó
+todavía una segunda máquina. Durante la primera construcción se detectó una DLL
+ICU ajena en el `PATH`; se aisló el entorno de build y se repitió la prueba con
+un ZIP nuevo.
+
 ## Candidatos posteriores
 
 - [ ] Proveedor alternativo implementando el mismo contrato.
 - [ ] Cancelación de solicitud y mejor manejo de estados de carga.
 - [ ] Conteo preciso de tokens cuando el proveedor lo permita.
-- [ ] Empaquetado y pruebas de instalación para Windows 11.
+- [ ] Instalador Windows firmado, si una distribución más amplia lo justifica.
 
 ## Referencias de integración
 

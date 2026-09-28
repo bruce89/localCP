@@ -18,6 +18,9 @@ dev = [
     "pytest-cov>=5,<8",
     "ruff>=0.9,<1",
 ]
+package = [
+    "pyinstaller>=6.22,<7",
+]
 
 [project.gui-scripts]
 local-cp = "local_cp.app:main"

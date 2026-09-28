@@ -17,6 +17,7 @@ Abrir un proyecto o ejecutar análisis estático no inicia solicitudes externas.
 - `ai.service`: construye el proveedor seleccionado y resuelve la credencial.
 - `ai.openai_compatible`: transporte HTTP de Chat Completions.
 - `config`: preferencias no secretas y lectura de `GEMINI_API_KEY` desde Windows.
+- `scripts`: construcción del paquete portátil y verificación del ZIP extraído.
 
 ```mermaid
 flowchart LR
@@ -31,6 +32,8 @@ flowchart LR
     H --> E[API configurada]
     W[Variable de usuario GEMINI_API_KEY] --> H
     Q[QSettings: URL y modelo] --> H
+    B[PyInstaller en Windows] --> Z[ZIP portátil: LocalCP.exe + dependencias]
+    Z --> G
 ```
 
 El diagrama representa el flujo actual y es la base para próximas iteraciones.
@@ -71,7 +74,14 @@ vuelven a la interfaz por señales Qt, conservando la ventana interactiva.
 - La detección de lenguajes depende de extensiones.
 - La vista de código no edita ni colorea sintaxis.
 - Los directorios ignorados usan una lista fija, no `.gitignore`.
-- No existe todavía un ejecutable empaquetado para Windows.
+- I5 genera un ZIP portátil para Windows 11 de la misma arquitectura que la
+  máquina de compilación. No es un instalador ni está firmado; se debe conservar
+  toda la carpeta `LocalCP` junto al EXE.
+- La prueba automática extrae el ZIP a otra carpeta y ejecuta un arranque Qt
+  offscreen sin Python en `PATH`. El usuario confirmó la revisión visual; queda
+  pendiente una prueba en otra máquina.
+- No hay lockfile; los rangos de dependencias no producen builds idénticos a
+  nivel de bytes. Ver [guía de empaquetado](packaging.md).
 - La estimación de tokens es aproximada y la cuota real depende del proyecto de
   Google AI Studio. No se infiere una cuota gratis fija.
 - El endpoint compatible con OpenAI está en beta según [Google AI for Developers](https://ai.google.dev/gemini-api/docs/openai).

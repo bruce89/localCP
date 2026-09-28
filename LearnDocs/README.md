@@ -16,6 +16,7 @@ terminar un curso de Python antes de tocar la aplicación.
 | 4 | [Hoja de ruta](05-hoja-de-ruta.md) | ¿Qué estudiar ahora y qué dejar para después? |
 | I3 | [Laboratorio: varios archivos](06-I3-contexto-multiple.md) | ¿Cómo se conserva el alcance explícito al ampliar una solicitud? |
 | I4 | [Laboratorio: aviso de secretos](07-I4-aviso-secretos.md) | ¿Qué puede detectar una heurística local y qué decisión conserva el usuario? |
+| I5 | [Laboratorio: paquete portátil](08-I5-empaquetado.md) | ¿Qué diferencia hay entre ejecutar el código y distribuir una aplicación? |
 
 ## Método
 

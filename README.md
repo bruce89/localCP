@@ -5,7 +5,7 @@ running lightweight static analysis, and optionally asking about up to three
 explicitly chosen Python files through an OpenAI-compatible API. Local analysis
 needs no API key.
 
-## Milestone 1 features
+## Current features
 
 - Open a local project with a native directory picker.
 - Browse its files and folders in a tree.
@@ -14,11 +14,14 @@ needs no API key.
 - Analyze Python classes, functions, methods, and imports with `ast`.
 - Keep project scanning and analysis off the GUI thread.
 - Report binary, oversized, unreadable, and invalid Python files clearly.
+- Prepare an explicit, previewed AI question using up to three selected Python files.
+- Warn locally about some likely secrets before an optional external send.
+- Build a portable Windows ZIP; source use and local analysis remain possible without AI credentials.
 
 ## Requirements
 
 - Windows 11
-- Python 3.11 or newer
+- Python 3.11 or newer to run from source; the portable ZIP includes Python.
 
 ## Setup and run
 
@@ -38,6 +41,21 @@ You can also launch the installed `local-cp` command.
 pytest
 ruff check .
 ```
+
+## Portable Windows build
+
+The optional packaging tools are only needed on the machine building the app:
+
+```powershell
+python -m pip install -e ".[dev,package]"
+.\scripts\build_windows.ps1 -Python ".\.venv\Scripts\python.exe"
+```
+
+The script creates `dist\LocalCP-windows-x64.zip` and checks that the extracted
+`LocalCP.exe` starts with Python removed from its process `PATH`. Unzip the whole
+`LocalCP` folder anywhere on Windows 11 and run `LocalCP.exe`; do not move the EXE
+out of its folder. The app still works locally without API credentials. For build,
+test, and distribution details, see [docs/packaging.md](docs/packaging.md).
 
 ## Usage
 

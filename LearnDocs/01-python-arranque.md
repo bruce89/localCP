@@ -4,6 +4,20 @@ Esta guía asume **PowerShell en Windows 11** y el proyecto en `C:\Bruze\localCP
 El objetivo no es memorizar comandos: es saber qué intérprete ejecuta la app y
 dónde encuentra sus bibliotecas.
 
+## Si ya preparaste el proyecto: tres pasos en cada consola nueva
+
+```powershell
+Set-Location C:\Bruze\localCP
+.\.venv\Scripts\Activate.ps1
+python -m local_cp
+```
+
+El primero te ubica en el proyecto; el segundo activa **para esta consola** el
+Python de `.venv`; el tercero abre Local CP. Cerrar la consola termina la
+activación, pero no borra `.venv` ni los paquetes instalados. Por eso no hace
+falta repetir `py -m venv` ni `pip install` cada vez. Para salir del entorno sin
+cerrar la consola, usá `deactivate`.
+
 ## 1. Ubicarse y comprobar Python
 
 ```powershell
