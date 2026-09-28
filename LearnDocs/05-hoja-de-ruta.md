@@ -48,12 +48,19 @@ Ejercicio: [laboratorio I3](06-I3-contexto-multiple.md). Dominio: demostrar que
 seleccionar en el árbol no envía ni agrega archivos, y que cambiar la lista obliga
 a preparar otra vista previa.
 
-## G — siguiente iteración de producto
+## G — advertencia local de secretos (I4)
+
+Conceptos: heurística, falsos positivos y negativos, función pura, línea de
+origen y confirmación ligada a una vista previa. Ejercicio:
+[laboratorio I4](07-I4-aviso-secretos.md). Dominio: explicar por qué un resultado
+vacío del detector no demuestra que el archivo sea seguro para compartir.
+
+## H — siguiente iteración de producto
 
 Elegir **una** mejora del [SPEC](../docs/SPEC.md), formular un caso observable,
 escribir la prueba que la haría verificable y recién después implementar. Algunas
-opciones actuales: aviso local de secretos, cancelación o conteo más preciso de
-tokens. No sumes abstracciones por anticipado: primero
+opciones actuales: cancelación o conteo más preciso de tokens. No sumes
+abstracciones por anticipado: primero
 encontrá el cambio concreto que las necesita.
 
 Al cerrar cada etapa, completá una [ficha de sesión](04-bitacora.md) y dibujá de

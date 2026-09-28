@@ -90,3 +90,45 @@ def test_removing_file_invalidates_preview(tmp_path: Path) -> None:
     assert not panel._send_button.isEnabled()
     assert panel._preview.toPlainText() == ""
     panel.close()
+
+
+def test_flagged_context_requires_explicit_acknowledgement(tmp_path: Path) -> None:
+    app = QApplication.instance() or QApplication([])
+    source = tmp_path / "config.py"
+    source.write_text('API_KEY = "sample-secret-value"\n', encoding="utf-8")
+    calls: list[CodeContext] = []
+
+    class FakeAssistant:
+        def ask(
+            self, question: str, context: CodeContext, *, base_url: str, model: str
+        ) -> AIResponse:
+            calls.append(context)
+            return AIResponse("Answer", model)
+
+    panel = AIPanel(FakeSettings())  # type: ignore[arg-type]
+    panel._assistant = FakeAssistant()  # type: ignore[assignment]
+    panel.set_selection(tmp_path, source)
+    panel._add_button.click()
+    panel._question.setPlainText("Explain")
+    panel._prepare_button.click()
+
+    assert not panel._warning.isHidden()
+    assert "config.py:1" in panel._warning.text()
+    assert "sample-secret-value" not in panel._warning.text()
+    assert not panel._send_button.isEnabled()
+    panel._send_button.click()
+    assert calls == []
+
+    panel._acknowledge.setChecked(True)
+    assert panel._send_button.isEnabled()
+    panel._send_button.click()
+    deadline = time.monotonic() + 5
+    while panel._worker is not None and time.monotonic() < deadline:
+        app.processEvents()
+        time.sleep(0.01)
+    app.processEvents()
+    assert len(calls) == 1
+    panel._question.setPlainText("New question")
+    assert not panel._send_button.isEnabled()
+    assert not panel._acknowledge.isChecked()
+    panel.close()

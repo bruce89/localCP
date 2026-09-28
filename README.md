@@ -63,6 +63,11 @@ is never written to project files or application settings.
 4. Choose **Send previewed files and question**. This is the only action that
    sends source code to the configured provider.
 
+If a local scan finds a possible credential in the question or source, Local CP
+shows its location and asks you to acknowledge the warning before Send is enabled.
+It does not display the matched value in the warning. The scan is advisory and
+cannot prove that a file is free of secrets; review the full preview yourself.
+
 The current experiment allows at most 12 KB of source **across all files**,
 estimates at most 4,000 input tokens, and requests at most 384 output tokens.
 Changing the question or file list clears the preview; prepare it again before

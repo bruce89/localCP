@@ -4,6 +4,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QThreadPool
 from PySide6.QtWidgets import (
+    QCheckBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -18,6 +19,7 @@ from PySide6.QtWidgets import (
 
 from local_cp.ai.context import MAX_FILES, build_user_message, prepare_context
 from local_cp.ai.models import AIResponse, CodeContext
+from local_cp.ai.secret_scan import SecretFinding, scan_request
 from local_cp.ai.service import AssistantService
 from local_cp.config.settings import AppSettings
 from local_cp.gui.workers import Worker
@@ -35,6 +37,7 @@ class AIPanel(QWidget):
         self._included: list[Path] = []
         self._prepared: CodeContext | None = None
         self._prepared_question: str | None = None
+        self._findings: tuple[SecretFinding, ...] = ()
         self._worker: Worker | None = None
 
         self._file_label = QLabel("Select a Python file.")
@@ -70,6 +73,13 @@ class AIPanel(QWidget):
         self._send_button = QPushButton("Send previewed files and question")
         self._send_button.setEnabled(False)
         self._send_button.clicked.connect(self._send)
+        self._warning = QLabel()
+        self._warning.setWordWrap(True)
+        self._warning.setVisible(False)
+        self._warning.setStyleSheet("color: #9b3b12; font-weight: 600;")
+        self._acknowledge = QCheckBox("I reviewed the flagged lines and choose to send")
+        self._acknowledge.setVisible(False)
+        self._acknowledge.toggled.connect(self._update_send_button)
 
         form = QFormLayout()
         form.addRow("Base URL", self._url)
@@ -88,6 +98,8 @@ class AIPanel(QWidget):
         layout.addWidget(self._prepare_button)
         layout.addWidget(QLabel("Exact question and source to send — review for secrets"))
         layout.addWidget(self._preview, 1)
+        layout.addWidget(self._warning)
+        layout.addWidget(self._acknowledge)
         layout.addWidget(self._send_button)
         layout.addWidget(QLabel("Answer"))
         layout.addWidget(self._response, 1)
@@ -150,8 +162,13 @@ class AIPanel(QWidget):
     def _invalidate_preview(self) -> None:
         self._prepared = None
         self._prepared_question = None
+        self._findings = ()
         self._preview.clear()
-        self._send_button.setEnabled(False)
+        self._warning.clear()
+        self._warning.setVisible(False)
+        self._acknowledge.setChecked(False)
+        self._acknowledge.setVisible(False)
+        self._update_send_button()
         self._budget.setText(
             f"{len(self._included)}/{MAX_FILES} .py files selected; "
             "12 KB combined, estimated input limit 4,000 tokens."
@@ -168,17 +185,47 @@ class AIPanel(QWidget):
             return
         self._prepared = context
         self._prepared_question = question
+        self._findings = scan_request(question, context)
         self._preview.setPlainText(build_user_message(question, context.files))
         self._budget.setText(
             f"{len(context.files)} file(s) · ~{context.estimated_input_tokens:,} input tokens "
             "(conservative estimate; actual usage may differ)."
         )
-        self._send_button.setEnabled(self._worker is None)
+        self._acknowledge.setChecked(False)
+        if self._findings:
+            locations = ", ".join(
+                f"{finding.location}:{finding.line} ({finding.reason})"
+                for finding in self._findings[:5]
+            )
+            more = f" (+{len(self._findings) - 5} more)" if len(self._findings) > 5 else ""
+            self._warning.setText(
+                f"Possible secrets found locally: {locations}{more}. "
+                "Review the preview before sending. Detection is incomplete."
+            )
+            self._warning.setVisible(True)
+            self._acknowledge.setVisible(True)
+        else:
+            self._warning.clear()
+            self._warning.setVisible(False)
+            self._acknowledge.setVisible(False)
+        self._update_send_button()
+
+    def _update_send_button(self) -> None:
+        self._send_button.setEnabled(
+            self._prepared is not None
+            and self._worker is None
+            and (not self._findings or self._acknowledge.isChecked())
+        )
 
     def _send(self) -> None:
         context = self._prepared
         question = self._prepared_question
-        if context is None or question is None or self._worker is not None:
+        if (
+            context is None
+            or question is None
+            or self._worker is not None
+            or (self._findings and not self._acknowledge.isChecked())
+        ):
             return
         self._settings.set_provider(self._url.text(), self._model.text())
         self._response.setPlainText("Waiting for provider…")
@@ -205,7 +252,7 @@ class AIPanel(QWidget):
 
     def _finish_request(self) -> None:
         self._worker = None
-        self._send_button.setEnabled(self._prepared is not None)
+        self._update_send_button()
 
     def _show_error(self, message: str) -> None:
         self._response.setPlainText(message)

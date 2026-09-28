@@ -12,6 +12,7 @@ Abrir un proyecto o ejecutar análisis estático no inicia solicitudes externas.
 - `project`: exploración, clasificación y lectura de archivos de texto.
 - `analysis`: análisis determinista de Python mediante `ast`.
 - `ai.context`: lista explícita de archivos y presupuesto conjunto de entrada.
+- `ai.secret_scan`: heurísticas locales que devuelven ubicación y tipo, sin valores.
 - `ai.provider`: contrato `AIProvider` consumible por otros proveedores.
 - `ai.service`: construye el proveedor seleccionado y resuelve la credencial.
 - `ai.openai_compatible`: transporte HTTP de Chat Completions.
@@ -24,7 +25,8 @@ flowchart LR
     G --> A[Análisis AST local]
     G --> L[Lista explícita de archivos]
     L --> C[Vista previa y presupuesto conjunto]
-    C -->|Send explícito| S[AssistantService / AIProvider]
+    C --> D[Escaneo local de posibles secretos]
+    D -->|Sin hallazgos, o confirmación explícita| S[AssistantService / AIProvider]
     S --> H[Proveedor HTTP compatible con OpenAI]
     H --> E[API configurada]
     W[Variable de usuario GEMINI_API_KEY] --> H
@@ -46,6 +48,12 @@ editables; el transporte puede reemplazarse implementando `AIProvider`.
 - Cada archivo se lee al preparar la vista previa y se conserva esa copia para el
   envío. Cambiar la lista o la pregunta invalida la vista previa. La selección
   del árbol por sí sola no agrega contexto.
+- El escaneo de I4 usa esa misma copia y la pregunta. Sólo identifica algunos
+  formatos evidentes de claves, encabezados de clave privada y literales asignados
+  a nombres como `api_key` o `password`. Puede producir falsos positivos y omitir
+  secretos de otros formatos; el usuario sigue revisando el contenido completo.
+- Si hay hallazgos, una casilla de confirmación adicional habilita Send para esa
+  vista previa. Cambiar pregunta o lista borra esa confirmación.
 - La clave se lee en tiempo de ejecución del entorno del proceso o de la variable
   de usuario de Windows. No se guarda en `QSettings` ni en el repositorio.
 - Errores HTTP muestran sólo código y categoría; no imprimen cuerpos de respuesta,
@@ -70,6 +78,6 @@ vuelven a la interfaz por señales Qt, conservando la ventana interactiva.
 
 ## Evolución prevista
 
-Ver [SPEC.md](SPEC.md). Una próxima iteración puede sumar detección de secretos,
-conteo más preciso por proveedor, conversaciones locales y otros transportes sin
-tocar el análisis estático.
+Ver [SPEC.md](SPEC.md). Una próxima iteración puede sumar conteo más preciso por
+proveedor, cancelación, conversaciones locales y otros transportes sin tocar el
+análisis estático.

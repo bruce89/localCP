@@ -3,7 +3,7 @@
 El recorrido pedagógico, separado de la especificación del producto, está en
 [LearnDocs](../LearnDocs/README.md).
 
-Estado: iteración 3, contexto explícito de hasta tres archivos Python.
+Estado: iteración 4, aviso local de posibles secretos antes del envío.
 
 ## Problema y propuesta
 
@@ -90,9 +90,29 @@ offscreen; la revisión interactiva de diseño en Windows sigue pendiente.
 5. Send hace una única solicitud con los archivos preparados; el análisis local
    continúa funcionando sin credenciales.
 
+## Iteración 4 — corte actual
+
+- [x] Buscar patrones evidentes de credenciales en la pregunta y los archivos
+  preparados, sin llamadas de red.
+- [x] Mostrar sólo ubicación, línea y tipo de posible secreto, nunca el valor.
+- [x] Exigir una confirmación adicional antes de habilitar Send si hay hallazgos.
+- [x] Invalidar los hallazgos y la confirmación al cambiar pregunta o lista.
+- [x] Probar hallazgos, ausencia de falsos positivos comunes y flujo de GUI con
+  un proveedor simulado.
+- [ ] Revisión visual interactiva en Windows.
+
+### Criterios de aceptación I4
+
+1. Preparar el contexto analiza localmente los mismos textos que se mostrarán en
+   la vista previa; el detector no lee otros archivos ni envía nada.
+2. Un hallazgo impide Send hasta que el usuario revise la vista previa y marque
+   la confirmación de esa preparación concreta.
+3. Los avisos no copian valores sospechosos; incluyen ruta o «question» y línea.
+4. Cambiar pregunta o archivos borra la confirmación anterior.
+5. El detector es una ayuda parcial, no un certificado de ausencia de secretos.
+
 ## Candidatos posteriores
 
-- [ ] Señales locales de posibles secretos antes de enviar.
 - [ ] Proveedor alternativo implementando el mismo contrato.
 - [ ] Cancelación de solicitud y mejor manejo de estados de carga.
 - [ ] Conteo preciso de tokens cuando el proveedor lo permita.

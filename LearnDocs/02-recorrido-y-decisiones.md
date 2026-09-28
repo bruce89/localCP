@@ -5,6 +5,7 @@ Esta es una fotografía de las iteraciones 1 y 2. El [SPEC](../docs/SPEC.md) y e
 reconstruimos el camino de una acción concreta y el motivo práctico de cada
 frontera, sin presentar propuestas futuras como si ya estuvieran implementadas.
 La ampliación a varios archivos de I3 tiene su [laboratorio propio](06-I3-contexto-multiple.md).
+La advertencia local de I4 se estudia [aquí](07-I4-aviso-secretos.md).
 
 ## Lo que se construyó
 
